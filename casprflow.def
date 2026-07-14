@@ -1,0 +1,44 @@
+Bootstrap: docker
+From: condaforge/mambaforge:latest
+
+%post
+    ENV_NAME='casprflow'
+
+    conda config --add channels defaults
+    conda config --add channels bioconda
+    conda config --add channels conda-forge
+    conda config --set channel_priority flexible
+
+    mamba create -n ${ENV_NAME} --yes \
+        python=3.6 \
+        r-base=3.5.1 r-xtable \
+        matplotlib seaborn xlsxwriter jupyterlab ghostscript openjdk bc file\
+        cutadapt=1.18 star=2.7 bbmap=38.86 samtools=1.9 \
+        mageck=0.5.9.3 vispr=0.4.16 fastqc=0.11
+
+    # Install PBNPA from a CRAN mirror
+    # (dependencies=TRUE forces it to pull 'metaRNASeq', which PBNPA requires)
+    mamba run -n ${ENV_NAME} Rscript -e "install.packages('PBNPA', repos='https://cloud.r-project.org/', dependencies=TRUE)"
+
+    # Clean up the cache to keep the image size small
+    rm -rf /var/lib/apt/lists/*
+    mamba clean -afy
+
+    echo "export ENV_NAME=${ENV_NAME}" >> $SINGULARITY_ENVIRONMENT
+    echo "source /opt/conda/etc/profile.d/conda.sh" >> $SINGULARITY_ENVIRONMENT
+    echo "conda activate ${ENV_NAME}" >> $SINGULARITY_ENVIRONMENT
+
+%environment
+    export PATH=/opt/conda/bin:$PATH
+
+%runscript
+    echo "Container with conda environment (casprflow) activated"
+    exec /bin/bash --rcfile <(echo "source /opt/conda/etc/profile.d/conda.sh; conda activate casprflow")
+
+%labels
+    Author Sarang Bhutada
+    Description Container built for CasprFlow using the Mambaforge base image
+
+%help
+    This container was built for CasprFlow using the Mambaforge base image.
+    Use 'singularity shell casprflow.sif' or 'singularity exec casprflow.sif <command>' to use it.
