@@ -7,75 +7,75 @@
 # Relationship between input parameters and the ones used here
 f=$1; r=$2; l=$3; e=$4; o=$5; a=$6; A=$7
 m=$8; b=$9; y=${10}; t=${11}; q=${12}; c=${13}
-start=${14}; pause=${15}
+# start=${14}; pause=${15}
 
 printf "\nChecking that the format of inputs is correct\n"
 
 # Check if all of the required modules are installed and
 # show information on how to install the missing modules.
-if ! [ -x "$(command -v fastqc)" ]; then
-  printf "Missing: "
-  echo "fastqc not found"
-  echo "Information on the installation:"
-  echo "http://www.bioinformatics.babraham.ac.uk/projects/download.html"
-  exit 1
-fi
-if ! [ -x "$(command -v cutadapt)" ]; then
-  printf "Missing: "
-  echo "cutadapt not found"
-  echo "Information on the installation:"
-  echo "https://cutadapt.readthedocs.io/en/stable/installation.html"
-  exit 1
-fi
-if ! [ -x "$(command -v reformat.sh)" ]; then
-  printf "Missing: "
-  echo "bbmap not found"
-  echo "Information on the installation:"
-  echo "https://jgi.doe.gov/data-and-tools/bbtools/bb-tools-user-guide/installation-guide/"
-  exit 1
-fi
-if ! [ -x "$(command -v STAR)" ]; then
-  printf "Missing: "
-  echo "STAR not found"
-  echo "Information on the installation:"
-  echo "https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf"
-  exit 1
-fi
-if ! [ -x "$(command -v samtools)" ]; then
-  printf "Missing: "
-  echo "samtools not found"
-  echo "Information on the installation:"
-  echo "http://www.htslib.org/download/"
-  exit 1
-fi
-if ! [ -x "$(command -v gs)" ]; then
-  printf "Missing: "
-  echo "Ghostscript not found"
-  echo "Information on the installation:"
-  echo "https://www.ghostscript.com/doc/9.20/Make.htm"
-  exit 1
-fi
-if ! [ -x "$(command -v mageck)" ]; then
-  printf "Missing: "
-  echo "MAGeCK not found"
-  echo "Information on the installation:"
-  echo "https://bitbucket.org/liulab/mageck-vispr"
-  exit 1
-fi
-if ! [ -x "$(command -v vispr)" ]; then
-  printf "Missing: "
-  echo "VISPR not found"
-  echo "Information on the installation:"
-  echo "https://bitbucket.org/liulab/mageck-vispr"
-  exit 1
-fi
-if ! [ -x "$(command -v R)" ]; then
-  printf "Missing: "
-  echo "R not found"
-  echo "Information on the installation:"
-  echo "https://www.r-project.org/"
-  exit 1
-fi
+# if ! [ -x "$(command -v fastqc)" ]; then
+#   printf "Missing: "
+#   echo "fastqc not found"
+#   echo "Information on the installation:"
+#   echo "http://www.bioinformatics.babraham.ac.uk/projects/download.html"
+#   exit 1
+# fi
+# if ! [ -x "$(command -v cutadapt)" ]; then
+#   printf "Missing: "
+#   echo "cutadapt not found"
+#   echo "Information on the installation:"
+#   echo "https://cutadapt.readthedocs.io/en/stable/installation.html"
+#   exit 1
+# fi
+# if ! [ -x "$(command -v reformat.sh)" ]; then
+#   printf "Missing: "
+#   echo "bbmap not found"
+#   echo "Information on the installation:"
+#   echo "https://jgi.doe.gov/data-and-tools/bbtools/bb-tools-user-guide/installation-guide/"
+#   exit 1
+# fi
+# if ! [ -x "$(command -v STAR)" ]; then
+#   printf "Missing: "
+#   echo "STAR not found"
+#   echo "Information on the installation:"
+#   echo "https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf"
+#   exit 1
+# fi
+# if ! [ -x "$(command -v samtools)" ]; then
+#   printf "Missing: "
+#   echo "samtools not found"
+#   echo "Information on the installation:"
+#   echo "http://www.htslib.org/download/"
+#   exit 1
+# fi
+# if ! [ -x "$(command -v gs)" ]; then
+#   printf "Missing: "
+#   echo "Ghostscript not found"
+#   echo "Information on the installation:"
+#   echo "https://www.ghostscript.com/doc/9.20/Make.htm"
+#   exit 1
+# fi
+# if ! [ -x "$(command -v mageck)" ]; then
+#   printf "Missing: "
+#   echo "MAGeCK not found"
+#   echo "Information on the installation:"
+#   echo "https://bitbucket.org/liulab/mageck-vispr"
+#   exit 1
+# fi
+# if ! [ -x "$(command -v vispr)" ]; then
+#   printf "Missing: "
+#   echo "VISPR not found"
+#   echo "Information on the installation:"
+#   echo "https://bitbucket.org/liulab/mageck-vispr"
+#   exit 1
+# fi
+# if ! [ -x "$(command -v R)" ]; then
+#   printf "Missing: "
+#   echo "R not found"
+#   echo "Information on the installation:"
+#   echo "https://www.r-project.org/"
+#   exit 1
+# fi
 echo "All of the required programs are properly installed"
 
 ########################################
@@ -109,6 +109,7 @@ if [ -z $l ]; then
   exit 1
 fi
 if [ ! -f $l ]; then
+  echo "$l"
   echo "Error: the library file doesn't exist"
   exit 1
 fi
@@ -188,6 +189,7 @@ fi
 # Check that -f fastq files are correct
 for fastqfile in $f; do
   # Check that the fastq files do exist
+  echo ${fastqfile}
   if [ ! -f ${fastqfile} ]; then
     echo "Error: some of the forward fastq files don't exist"
     exit 1
@@ -230,37 +232,37 @@ if [[ $o != 35 && $o != 53 ]]; then
 fi
 
 # Check that --start is one of the possible options
-if [[ $start != "" && $start != "qc" && \
-      $start != "trim" && $start != "map" ]]; then
-  echo "Error: problem with given argument to --start. Check the options"
-  exit 1
-fi
+# if [[ $start != "" && $start != "qc" && \
+#       $start != "trim" && $start != "map" ]]; then
+#   echo "Error: problem with given argument to --start. Check the options"
+#   exit 1
+# fi
 
-# Check that --pause is one of the possible options
-if [[ $pause != "" && $pause != "indexing" && $pause != "trim" && \
-      $pause != "map" && $pause != "qc" ]]; then
-  echo "Error: problem with given argument to --pause. Check the options"
-  exit 1
-fi
+# # Check that --pause is one of the possible options
+# if [[ $pause != "" && $pause != "indexing" && $pause != "trim" && \
+#       $pause != "map" && $pause != "qc" ]]; then
+#   echo "Error: problem with given argument to --pause. Check the options"
+#   exit 1
+# fi
 
-# Make sure that starting step is always earlier than pausing step
-if [[ $pause == "indexing" && $start != "" ]]; then
-  echo "Error: problem with start, stop. Cannot stop before starting"
-  exit 1
-fi
-if [[ $pause == "qc" && ($start != "" && $start != "qc") ]]; then
-  echo "Error: problem with start, pause. Cannot stop before starting"
-  exit 1
-fi
-if [[ $pause == "trim" && \
-      ($start != "" && $start != "qc" && $start != "trim") ]]; then
-  echo "Error: problem with start, pause. Cannot stop before starting"
-  exit 1
-fi
-if [[ $start == "map" && ($pause != "" && $pause != "map") ]]; then
-  echo "Error: problem with start, pause. Cannot stop before starting"
-  exit 1
-fi
+# # Make sure that starting step is always earlier than pausing step
+# if [[ $pause == "indexing" && $start != "" ]]; then
+#   echo "Error: problem with start, stop. Cannot stop before starting"
+#   exit 1
+# fi
+# if [[ $pause == "qc" && ($start != "" && $start != "qc") ]]; then
+#   echo "Error: problem with start, pause. Cannot stop before starting"
+#   exit 1
+# fi
+# if [[ $pause == "trim" && \
+#       ($start != "" && $start != "qc" && $start != "trim") ]]; then
+#   echo "Error: problem with start, pause. Cannot stop before starting"
+#   exit 1
+# fi
+# if [[ $start == "map" && ($pause != "" && $pause != "map") ]]; then
+#   echo "Error: problem with start, pause. Cannot stop before starting"
+#   exit 1
+# fi
 
 printf "All inputs are good\n"
 
@@ -279,23 +281,23 @@ fi
 printf "num_cols:\t${ncolslib}\n" > "${q}/intermediate/useful_information.txt"
 
 # Save input parameters that will be used in the output folder
-echo "Input parameters used by CASPR" > ${q}/outputs/inputs.txt
-echo "" >> ${q}/outputs/inputs.txt
-echo "-q or --output-dir    = $q" >> ${q}/outputs/inputs.txt
-echo "-f or --fastq-forward = $f" >> ${q}/outputs/inputs.txt
-echo "-r or --fastq-reverse = $r" >> ${q}/outputs/inputs.txt
-echo "-l or --library       = $l" >> ${q}/outputs/inputs.txt
-echo "-e or --exper-design  = $e" >> ${q}/outputs/inputs.txt
-echo "-c or --controls      = $c" >> ${q}/outputs/inputs.txt
-echo "-a or --adapter-f     = $a" >> ${q}/outputs/inputs.txt
-echo "-A or --adapter-r     = $A" >> ${q}/outputs/inputs.txt
-echo "-m or --mismatches    = $m" >> ${q}/outputs/inputs.txt
-echo "-b or --bases-aligned = $b" >> ${q}/outputs/inputs.txt
-echo "-y or --fdr-threshold = $y" >> ${q}/outputs/inputs.txt
-echo "-o or --orientation   = $o" >> ${q}/outputs/inputs.txt
-echo "-s or --start         = $start" >> ${q}/outputs/inputs.txt
-echo "-p or --pause         = $pause" >> ${q}/outputs/inputs.txt
-echo "-t or --threads       = $t" >> ${q}/outputs/inputs.txt
+echo "Input parameters used by CASPR" > inputs.txt
+echo "" >> inputs.txt
+echo "-q or --output-dir    = $q" >> inputs.txt
+echo "-f or --fastq-forward = $f" >> inputs.txt
+echo "-r or --fastq-reverse = $r" >> inputs.txt
+echo "-l or --library       = $l" >> inputs.txt
+echo "-e or --exper-design  = $e" >> inputs.txt
+echo "-c or --controls      = $c" >> inputs.txt
+echo "-a or --adapter-f     = $a" >> inputs.txt
+echo "-A or --adapter-r     = $A" >> inputs.txt
+echo "-m or --mismatches    = $m" >> inputs.txt
+echo "-b or --bases-aligned = $b" >> inputs.txt
+echo "-y or --fdr-threshold = $y" >> inputs.txt
+echo "-o or --orientation   = $o" >> inputs.txt
+echo "-s or --start         = $start" >> inputs.txt
+echo "-p or --pause         = $pause" >> inputs.txt
+echo "-t or --threads       = $t" >> inputs.txt
 
 ##########
 ## DONE ##

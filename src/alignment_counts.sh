@@ -7,7 +7,7 @@ set -e
 #################################
 
 # Relationship between input parameters and the ones used here
-m=$1; b=$2; t=$3; q=$4; r=$5; l=$6; info=$7
+m=$1; b=$2; t=$3; q=$4; r=$5; l=$6; info=$7; genomedir=$8; trimdir=$9
 
 # Compute length of the guide RNAs
 lguide1=$(awk 'NR==1 {print $3}' $l | wc -c)
@@ -42,7 +42,7 @@ rm -rf "${q}/temporal"
 # Perform the mapping with STAR
 printf "\nAligning the reads to the guides\n"
 
-for i in ${q}/intermediate/sgRNA2_sgRNA1*; do
+for i in ${trimdir}/sgRNA2_sgRNA1*; do
   # Take name of fastqfile ignoring directory, zip, fastq and common part
   nametwo=$(echo $i | sed 's/.*intermediate\/sgRNA2_sgRNA1_//g' | \
         sed 's/\.gz//g' | sed 's/\.fastq//g' | sed 's/\.fq//g')
@@ -50,7 +50,7 @@ for i in ${q}/intermediate/sgRNA2_sgRNA1*; do
   # Perform alignment
   STAR --runThreadN $t \
     --runMode alignReads \
-    --genomeDir "${q}/genome" \
+    --genomeDir "${genomedir}" \
     --readFilesCommand "gunzip -c" \
     --readFilesIn $i \
     $shm_flags \
@@ -73,7 +73,7 @@ for i in ${q}/intermediate/sgRNA2_sgRNA1*; do
     # Perform alignment considering all bp
     STAR --runThreadN $t \
       --runMode alignReads \
-      --genomeDir "${q}/genome" \
+      --genomeDir "${genomedir}" \
       --readFilesCommand "gunzip -c" \
       --readFilesIn $i \
       $shm_flags \
@@ -94,7 +94,7 @@ for i in ${q}/intermediate/sgRNA2_sgRNA1*; do
       # Perform alignment considering all bp and 3 mismatches
       STAR --runThreadN $t \
         --runMode alignReads \
-        --genomeDir "${q}/genome" \
+        --genomeDir "${genomedir}" \
         --readFilesCommand "gunzip -c" \
         --readFilesIn $i \
         $shm_flags \
@@ -144,7 +144,7 @@ for i in ${q}/intermediate/sgRNA2_sgRNA1*; do
   ${q}/intermediate/Unmapped_${nametwo}
 
   # Remove files that can lead to problems in future iterations
-  rm ${q}/${nametwo}_Aligned* ${q}/${nametwo}_Log* ${q}/${nametwo}_SJ.out.tab
+  #rm ${q}/${nametwo}_Aligned* ${q}/${nametwo}_Log* ${q}/${nametwo}_SJ.out.tab
 
 done
 
@@ -158,7 +158,7 @@ commandpaste="<(sort -V ${q}/intermediate/reads_${nametwo}.tsv | cut -f1)"
 
 # Write second column of the table: Gene name
 commandpaste="${commandpaste} \
-    <(sort -u -k3 ${q}/intermediate/sgRNA2.sgRNA1_map.txt | sort -V | cut -f2)"
+    <(sort -u -k3 ${genomedir}/sgRNA2.sgRNA1_map.txt | sort -V | cut -f2)"
 
 # Write header
 header="ID\tGene"
@@ -167,7 +167,7 @@ header="ID\tGene"
 for i in ${q}/intermediate/reads*; do
   commandpaste="${commandpaste} <(sort -V $i | cut -f2)"
   name=$(echo $i | sed 's/.*intermediate\/reads_//g' | sed 's/.tsv//g')
-  nametwo=$(echo ${q}/intermediate/sgRNA2_sgRNA1_${name}* | \
+  nametwo=$(echo ${trimdir}/sgRNA2_sgRNA1_${name}* | \
           sed 's/.*intermediate\/sgRNA2_sgRNA1_/file./g')
   header="${header}\t${nametwo}"
 done
@@ -175,7 +175,7 @@ done
 # Paste everything
 eval paste ${commandpaste} > "${q}/intermediate/counts.txt"
 echo -e ${header} | \
-cat - ${q}/intermediate/counts.txt > "${q}/outputs/table.counts.txt"
+cat - ${q}/intermediate/counts.txt > "table.counts.txt"
 
 
 ###################################################################
@@ -200,7 +200,7 @@ if [[ $info == 1 ]]; then
     # Perform alignment
     STAR --runThreadN $t \
       --runMode alignReads \
-      --genomeDir "${q}/genome" \
+      --genomeDir "${genomedir}" \
       --readFilesIn $i \
       $shm_flags \
       --alignIntronMax 1 \
@@ -227,8 +227,8 @@ if [[ $info == 1 ]]; then
     samtools view -h -o "${q}/${nametwo}_sgrna_out.sam" \
                         "${q}/${nametwo}_sgrna_Aligned.out.bam"
     # Remove files that can lead to problems in future iterations
-    rm ${q}/${nametwo}_sgrna_Aligned* \
-        ${q}/${nametwo}_sgrna_Log* ${q}/${nametwo}_sgrna_SJ.out.tab
+    #rm ${q}/${nametwo}_sgrna_Aligned* \
+    #    ${q}/${nametwo}_sgrna_Log* ${q}/${nametwo}_sgrna_SJ.out.tab
   done
   rm ${q}/intermediate/Unmapped_*
 fi
@@ -237,7 +237,7 @@ fi
 if [[ $shm_flags != "" ]]; then
   STAR --runThreadN $t \
     --runMode alignReads \
-    --genomeDir "${q}/genome" \
+    --genomeDir "${genomedir}" \
     --genomeLoad Remove \
     --outTmpDir "${q}/temporal" \
     --outFileNamePrefix "${q}/removalprocess" \
@@ -250,3 +250,15 @@ rm -f ${q}/temporal*
 ##########
 ## DONE ##
 ##########
+
+currentdir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
+###################################################
+## Create plots with the alignment statistics
+###################################################
+
+printf "\nGenerating plots to see alignment statistics\n"
+Rscript --vanilla $currentdir/alignment_statistics.R \
+      $q ${q}/intermediate/Statistics_alignment* \
+|| (echo "Problem with R. Check if the R version is correct." && exit 1)
+if [[ $(echo $?) != 0 ]]; then exit 1; fi # Exit if there has been an error.

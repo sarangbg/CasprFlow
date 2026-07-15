@@ -7,7 +7,7 @@ set -e
 #############################################################
 
 # Relationship between input parameters and the ones used here
-f=$1; r=$2; l=$3; o=$4; a=$5; A=$6; q=$7; t=$8
+f=$1; r=$2; l=$3; o=$4; a=$5; A=$6; q=$7; t=$8; qcdir=$9
 
 printf "\nTrimming the reads\n"
 
@@ -17,6 +17,7 @@ printf "\nTrimming the reads\n"
 ############################
 
 # Trimming of the reads for the --orientation 35
+
 function trimming_35 { # Only possible with forward & reverse reads
 # $1=fastqfile, $2=nametwo, $3=reversefile, $4=adapter-f, $5=adapter-r
 # $6=lguide1, $7=lguide2, $8=ftrim, $9=fpos, $10=rtrim, $11=rpos
@@ -61,7 +62,8 @@ function trimming_35 { # Only possible with forward & reverse reads
   rm "${q}/intermediate/tmp.1_$2.fastq" "${q}/intermediate/tmp.2_$2.fastq"
 }
 
-# Trimming of the reads for the --oreintation 53
+# Trimming of the reads for the --orientation 53
+
 function trimming_53 {
 # $1=fastqfile, $2=nametwo, $3=filename, $4=adapter-f, $5=adapter-r
 # $6=lguide1, $7=lguide2, $8=ftrim, $9=fpos, $10=rtrim, $11=rpos, $12=name
@@ -466,7 +468,7 @@ for fastqfile in $f; do
   # It is needed only for the paired guides.
   if [[ ($r != "") ]]; then
     # Determine encoding from fastqc outputs
-    namefastqc="${q}/qualitycontrol/${nametwo}_fastqc.html"
+    namefastqc="${qcdir}/${nametwo}_fastqc.html"
     encoding=$(cat ${namefastqc} | grep -oEi 'Encoding.*Total')
     if [[ $(echo $encoding | grep -oEi 'Sanger') != "" || \
           $(echo $encoding | grep -oEi 'Illumina 1.9') != "" || \
@@ -497,6 +499,24 @@ for fastqfile in $f; do
 done
 
 echo "Trimming of reads finished succesfully"
+
+
+############################
+## Compute statistics ##
+############################
+currentdir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
+# Create plots with the trimming statistics
+printf "\nGenerating plots to see trimming statistics\n"
+# Collect needed information previously created
+triminf=$(cat "${q}/intermediate/useful_information.txt" | \
+        awk 'NR>1' | sort -k1 | awk '{print $2}')
+# Run R script
+Rscript --vanilla $currentdir/trimming_statistics.R \
+        "$triminf" "$q" ${q}/intermediate/trim_stat* \
+|| (echo "Problem with R. Check if the R version is correct." && exit 1)
+if [[ $(echo $?) != 0 ]]; then exit 1; fi # Exit if there has been an error.
+echo "Plots were created successfully"
 
 ##########
 ## DONE ##

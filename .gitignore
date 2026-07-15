@@ -1,7 +1,13 @@
 # R files
 .Rhistory
 
+# results of test runs
 testdata/*/results
+*results*
+
+# nextflow
+work
+*.nextflow*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -7,26 +7,29 @@ set -e
 ########################
 
 # Relationship between input parameters and the ones used here
-l=$1; t=$2; q=$3
+l=$1; t=$2; q=$3; m=$4
 
 # Remove directory if exists and create a new one with all permissions
 rm -rf "${q}/genome" && mkdir "${q}/genome" && chmod +xwr "${q}/genome"
 
 printf "\nCreating fake genome with the guide RNAs\n"
 
+# mkdir "${q}/intermediate"
+
 # Create fake genome.fasta file
 # Check if sgRNAs or pgRNAs
-ncolslib=$(head -n1 "${q}/intermediate/useful_information.txt" | \
-            awk '{print $2}')
-if [[ $ncolslib == 4 ]]; then
+# ncolslib=$(head -n1 "${q}/intermediate/useful_information.txt" | \
+#             awk '{print $2}')
+# if [[ $ncolslib == 4 ]]; then
+if [[ $m == 'pgrna' ]]; then
   cat $l | awk -v OFS='\t' '{print $1, $2, $4 $3}' \
-            > "${q}/intermediate/sgRNA2.sgRNA1_map.txt"
+            > "${q}/genome/sgRNA2.sgRNA1_map.txt"
 else
   cat $l | awk -v OFS='\t' '{print $1, $2, $3}' \
-            > "${q}/intermediate/sgRNA2.sgRNA1_map.txt"
+            > "${q}/genome/sgRNA2.sgRNA1_map.txt"
 fi
 # Transform the genome to a fasta format
-sort -u -k3 "${q}/intermediate/sgRNA2.sgRNA1_map.txt" | \
+sort -u -k3 "${q}/genome/sgRNA2.sgRNA1_map.txt" | \
 awk -v OFS='\t' '{print $1, $3}' | \
 sed 's/^[\t]*/>/g;s/\s/\n/g' > "${q}/genome/genome.fasta"
 

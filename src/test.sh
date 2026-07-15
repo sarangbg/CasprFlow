@@ -7,7 +7,7 @@ set -e
 #####################################
 
 # Relationship between input parameters and the ones used here
-e=$1; y=$2; q=$3; currentdir=$4; controlsfile=$5
+e=$1; y=$2; q=$3; currentdir=$4; controlsfile=$5; countfile=$6
 
 printf "\nComputing p-values and FDRs of genes\n"
 
@@ -35,7 +35,7 @@ if [[ $controlsfile  != "" ]]; then
   awk '{if($2 == "Neutral"){print $1}}' > ${q}/intermediate/neutralctr.txt
   # Create a file with neutral guide-RNAs
   while read ctrgenename; do
-    cat ${q}/outputs/table.counts.txt | \
+    cat ${countfile} | \
     awk -v x="${ctrgenename}" \
     '{if($2 == x){print $1}}' >> ${q}/intermediate/neutralctrlguides.txt
   done <${q}/intermediate/neutralctr.txt
@@ -59,7 +59,7 @@ if [[ $i == 0 ]]; then
 fi
 # Check if SampleName's are coincident with exper.design file
 allnames=$(cat $e | cut -f1 | sed 's/[^ ]* */file.&/g')
-fastqnames=$(head -n1 ${q}/outputs/table.counts.txt | cut -f 3-)
+fastqnames=$(head -n1 ${countfile} | cut -f 3-)
 fastqnames=$(echo ",$fastqnames," | tr "[:cntrl:]" ",")
 for samp in $allnames; do
   if [[ ! $fastqnames =~ ",$samp," ]]; then
@@ -84,7 +84,7 @@ for k in $ctrls; do
   # If neutral controls were provided
   if [[ -s ${q}/intermediate/neutralctrlguides.txt ]]; then
     mageck test \
-      -k ${q}/outputs/table.counts.txt \
+      -k ${countfile} \
       -t $s \
       -c $c \
       -n results_MAGeCK_$k \
@@ -93,7 +93,7 @@ for k in $ctrls; do
       --keep-tmp
   else # If neutral controls were not provided
     mageck test \
-      -k ${q}/outputs/table.counts.txt \
+      -k ${countfile} \
       -t $s \
       -c $c \
       -n results_MAGeCK_$k \
@@ -113,7 +113,7 @@ for k in $ctrls; do
     echo "Generating plots with PBNPA results"
   fi
   Rscript --vanilla ${currentdir}/PBNPA_test.R \
-          "$c" $y ${q}/outputs/table.counts.txt $e $k $q "$controlsfile" \
+          "$c" $y ${countfile} $e $k $q "$controlsfile" \
   || (echo "Problem with R. Check the version or the PBNPA package." && exit 2)
   if [[ $(echo $?) != 0 ]]; then exit 2; fi # Exit if there has been an error.
   if [[ $k == $max_idx ]]; then
@@ -143,3 +143,29 @@ printf "All of the analysis of genes completed succesfully\n"
 ##########
 ## DONE ##
 ##########
+
+# currentdir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
+###################################################
+## Combine results of MAGeCK and PBNPA
+###################################################
+printf "\nGenerating plots to visualize general results\n"
+Rscript --vanilla $currentdir/combine_res.R \
+        $y $q ${q}/outputs/results*summary.txt \
+|| (echo "Problem with R. Check if the R version is correct." && exit 1)
+if [[ $(echo $?) != 0 ]]; then exit 1; fi # Exit if there has been an error.
+echo "Results of MAGeCK and PBNPA were combined successfully"
+
+###################################################
+## Visualize some of the results at the guides level
+###################################################
+Rscript --vanilla $currentdir/create_graphs.R \
+        $q $y ${q}/intermediate/*sgrna_summary.txt \
+|| (echo "Problem with R. Check if the R version is correct." && exit 1)
+if [[ $(echo $?) != 0 ]]; then exit 1; fi # Exit if there has been an error.
+echo "Plots were created successfully"
+
+###################################################
+## Create files for the visualization with VISPR
+###################################################
+bash $currentdir/visualization.sh ${q} $currentdir

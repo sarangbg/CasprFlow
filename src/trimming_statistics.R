@@ -5,7 +5,7 @@ files_total = commandArgs(trailingOnly=TRUE)
 
 # Open pdf to save plots
 outputdir = files_total[2]
-name_pdf = paste(outputdir, "/outputs/Trimming_statistics.pdf", sep = "")
+name_pdf = paste(outputdir, "/intermediate/Trimming_statistics.pdf", sep = "")
 pdf(name_pdf)
 
 #################################
@@ -68,16 +68,26 @@ for (filename in files_total[3:length(files_total)]) {
     # Create plots with information of the trimming position
     dat2 = unlist(apply(data_to_plot, 1, function(x) rep(x[1], x[2])))
     dat2 = dat2 + cuted[counter]
-    hist(dat2,
-         breaks = (max(dat2)-min(dat2)) + 1,
-         freq = F,
-         bty = "l",
-         col = rgb(1,0,0,0.5),
-         border = rgb(1,0,0,1),
-         xlim = c(min(dat2), max(dat2)),
-         xlab = "Position of the sgRNAs within the reads (bp)",
-         ylab = "Percentage of reads",
-         main = paste("Trimming statistics,", name, sep = " "))
+    if (any(!is.na(dat2))) {
+      max_val <- max(dat2, na.rm = TRUE)
+      min_val <- min(dat2, na.rm = TRUE)
+      breaks_var = (max_val-min_val) + 1
+      hist(dat2,
+          breaks = breaks_var,
+          freq = F,
+          bty = "l",
+          col = rgb(1,0,0,0.5),
+          border = rgb(1,0,0,1),
+          xlim = c(min_val, max_val),
+          xlab = "Position of the sgRNAs within the reads (bp)",
+          ylab = "Percentage of reads",
+          main = paste("Trimming statistics,", name, sep = " "))
+    } else {
+      # Decide what you want to return if the vector is empty/all NAs
+      max_val <- 0 
+      min_val <- 0
+      # message("Vector is empty or contains only NAs!")
+    }
   }
 
   # Update counter
