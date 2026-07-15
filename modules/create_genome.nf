@@ -9,6 +9,7 @@ process create_genome {
     val library
     val threads
     val root_dir
+    val library_mode
 
     output:
     path "genome"
@@ -16,6 +17,6 @@ process create_genome {
     script:
     def script_path = root_dir + '/src/fake_genome.sh'
     """
-    ${script_path} ${library} ${threads} .
+    ${script_path} ${library} ${threads} . ${library_mode}
     """
 }

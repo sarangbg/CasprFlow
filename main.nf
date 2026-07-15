@@ -31,7 +31,7 @@ workflow {
 
     main:
     // create a channel for inputs from a CSV file
-    // greeting_ch = channel.fromPath(params.input)
+    // path_ch = channel.fromPath(params.input)
     //                     .splitCsv()
     //                     .map { line -> line[0] }
 
@@ -40,7 +40,7 @@ workflow {
     params.threads, workflow.launchDir)
 
     // step 2: create STAR genome from the library file
-    create_genome(params.library, params.threads, workflow.launchDir)
+    create_genome(params.library, params.threads, workflow.launchDir, params.library_mode)
 
     // step 3: quality control of input fastq files
     quality_control(params.fastq_forward, params.fastq_reverse, params.threads)
