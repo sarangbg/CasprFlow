@@ -2,21 +2,20 @@
 process quality_control {
 
     input:
-    val fastq_forward
-    val fastq_reverse
+    path(fastq_file)
     val threads
 
     output:
-    path "qc"
+    tuple path('*.html'), path('*.zip')
 
     script:
-    def f = fastq_forward.split(',').join(' ')
-    def r = fastq_reverse.split(',').join(' ')
+    def fastq_name = fastq_file.name
     """
-    mkdir qc
-    fastqc -t ${threads} -o ./qc ${f}
-    if [[ ${fastq_reverse} != "" ]]; then
-        fastqc -t ${threads} -o ./qc ${r}
+    if [[ "$fastq_name" != "NO_FILE" ]]; then
+        fastqc -t ${threads} ${fastq_file}
+    else
+        touch dummy.html
+        touch dummy.zip
     fi
     """
 }

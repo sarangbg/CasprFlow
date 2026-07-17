@@ -7,7 +7,7 @@ set -e
 #############################################################
 
 # Relationship between input parameters and the ones used here
-f=$1; r=$2; l=$3; o=$4; a=$5; A=$6; q=$7; t=$8; qcdir=$9
+f=$1; r=$2; l=$3; o=$4; a=$5; A=$6; q=$7; t=$8; fastqc_html=$9
 
 printf "\nTrimming the reads\n"
 
@@ -154,6 +154,8 @@ i=0
 for fastqfile in $f; do
   i=$(echo "${i} + 1" | bc -l)
   echo "Analysis of ${fastqfile}:"
+  fastqfile=$(readlink -f "$fastqfile")
+  echo "Analysis of ${fastqfile}:"
   # Automatic check of a repeated adapter before the guides.
   # To speed it up, consider that the first 1000 reads are representative
   # Check the most frequent position of the adapter in the reads
@@ -294,6 +296,8 @@ if [[ ($r != "") ]]; then
   i=0
   for fastqfile in $r; do
     i=$(echo "${i} + 1" | bc -l)
+    echo "Analysis of ${fastqfile}:"
+    fastqfile=$(readlink -f "$fastqfile")
     echo "Analysis of ${fastqfile}:"
     # Automatic check of a repeated adapter before the guides.
     # To speed it up, consider that the first 2500 reads are representative
@@ -468,8 +472,8 @@ for fastqfile in $f; do
   # It is needed only for the paired guides.
   if [[ ($r != "") ]]; then
     # Determine encoding from fastqc outputs
-    namefastqc="${qcdir}/${nametwo}_fastqc.html"
-    encoding=$(cat ${namefastqc} | grep -oEi 'Encoding.*Total')
+    # namefastqc="${qcdir}/${nametwo}_fastqc.html"
+    encoding=$(cat ${fastqc_html} | grep -oEi 'Encoding.*Total')
     if [[ $(echo $encoding | grep -oEi 'Sanger') != "" || \
           $(echo $encoding | grep -oEi 'Illumina 1.9') != "" || \
           $(echo $encoding | grep -oEi 'illumina 1.8') != "" ]]; then

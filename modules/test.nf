@@ -2,11 +2,11 @@
 process test {
 
     input:
-    val experiment_design
+    path experiment_design
     val fdr_threshold
     val rra_controls
     val root_dir
-    val count_file
+    path count_file
 
     output:
     path "outputs"

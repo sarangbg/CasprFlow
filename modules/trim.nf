@@ -2,25 +2,24 @@
 process trim {
 
     input:
-    val fastq_forward
-    val fastq_reverse
+    path(fastq_forward)
+    path(fastq_reverse)
+    path(fastqc_html_file)
     val library
     val orientation
     val adapter_f
     val adapter_r
     val threads
     val root_dir
-    val qc_dir
 
     output:
-    path "intermediate"
+    path('intermediate/sgRNA2_sgRNA1_*')
 
     script:
-    def f = '"' + fastq_forward.split(',').join(' ') + '"'
-    def r = '"' + fastq_reverse.split(',').join(' ') + '"'
     def script_path = root_dir + '/src/trimming_reads.sh'
+    def fastq_reverse_2 = fastq_reverse.name== "NO_FILE" ? "" : "$fastq_reverse"
     """
     mkdir intermediate
-    ${script_path} ${f} ${r} ${library} ${orientation} ${adapter_f} ${adapter_r} . ${threads} ${qc_dir}
+    ${script_path} ${fastq_forward} "${fastq_reverse_2}" ${library} ${orientation} ${adapter_f} ${adapter_r} . ${threads} ${fastqc_html_file}
     """
 }

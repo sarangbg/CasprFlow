@@ -41,10 +41,12 @@ rm -rf "${q}/temporal"
 
 # Perform the mapping with STAR
 printf "\nAligning the reads to the guides\n"
-
-for i in ${trimdir}/sgRNA2_sgRNA1*; do
+# fastq_list=($trimdir)
+# echo "{$fastq_list}"
+# for i in ${trimdir}/sgRNA2_sgRNA1*; do
+for i in $trimdir; do
   # Take name of fastqfile ignoring directory, zip, fastq and common part
-  nametwo=$(echo $i | sed 's/.*intermediate\/sgRNA2_sgRNA1_//g' | \
+  nametwo=$(echo $i | sed 's/sgRNA2_sgRNA1_//g' | \
         sed 's/\.gz//g' | sed 's/\.fastq//g' | sed 's/\.fq//g')
 
   # Perform alignment
@@ -167,8 +169,10 @@ header="ID\tGene"
 for i in ${q}/intermediate/reads*; do
   commandpaste="${commandpaste} <(sort -V $i | cut -f2)"
   name=$(echo $i | sed 's/.*intermediate\/reads_//g' | sed 's/.tsv//g')
-  nametwo=$(echo ${trimdir}/sgRNA2_sgRNA1_${name}* | \
-          sed 's/.*intermediate\/sgRNA2_sgRNA1_/file./g')
+  # nametwo=$(echo ${trimdir}/sgRNA2_sgRNA1_${name}* | \
+  #         sed 's/.*intermediate\/sgRNA2_sgRNA1_/file./g')
+  nametwo=$(echo sgRNA2_sgRNA1_${name}* | \
+          sed 's/sgRNA2_sgRNA1_/file./g')
   header="${header}\t${nametwo}"
 done
 

@@ -1,0 +1,5 @@
+name,fastq_1,fastq_2
+week0.1.fastq.gz,testdata/sgrna/week0.1.fastq.gz,
+week0.2.fastq.gz,testdata/sgrna/week0.2.fastq.gz,
+week4.1.fastq.gz,testdata/sgrna/week4.1.fastq.gz,
+week4.2.fastq.gz,testdata/sgrna/week4.2.fastq.gz,
