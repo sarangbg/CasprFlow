@@ -171,8 +171,9 @@ for i in ${q}/intermediate/reads*; do
   name=$(echo $i | sed 's/.*intermediate\/reads_//g' | sed 's/.tsv//g')
   # nametwo=$(echo ${trimdir}/sgRNA2_sgRNA1_${name}* | \
   #         sed 's/.*intermediate\/sgRNA2_sgRNA1_/file./g')
-  nametwo=$(echo sgRNA2_sgRNA1_${name}* | \
-          sed 's/sgRNA2_sgRNA1_/file./g')
+  # TODO: use the names provided in the samplesheet
+  nametwo=$(echo sgRNA2_sgRNA1_${name}* | sed 's/sgRNA2_sgRNA1_//g' | \
+          sed 's/.gz//g' | sed 's/.fq//g' | sed 's/.fastq//g')
   header="${header}\t${nametwo}"
 done
 

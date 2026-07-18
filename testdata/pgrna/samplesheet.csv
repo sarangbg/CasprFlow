@@ -1,3 +1,3 @@
 name,fastq_1,fastq_2
-week0.1_1.fastq.gz,testdata/pgrna/week0.1_1.fastq.gz,testdata/pgrna/week0.1_2.fastq.gz
-week4.1_1.fastq.gz,testdata/pgrna/week4.1_1.fastq.gz,testdata/pgrna/week4.1_2.fastq.gz
+week0.1_1,testdata/pgrna/week0.1_1.fastq.gz,testdata/pgrna/week0.1_2.fastq.gz
+week4.1_1,testdata/pgrna/week4.1_1.fastq.gz,testdata/pgrna/week4.1_2.fastq.gz

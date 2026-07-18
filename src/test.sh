@@ -18,7 +18,7 @@ sed 's/control//g' | cut -f3 | sort -u)
 i=0
 for ctr in $ctrls; do
   i=$(echo "${i} + 1" | bc -l)
-  c[ctr]=$(cat $e | grep "control${ctr}" | cut -f1 | sed 's/[^ ]* */file.&/g')
+  c[ctr]=$(cat $e | grep "control${ctr}" | cut -f1)
 done
 
 # Check the number of different treated samples
@@ -26,7 +26,7 @@ treatm=$(cat $e | grep treated | \
 sed 's/treated//g' | cut -f3 | sort -u)
 # Separate different treatment samples according their number
 for trm in $treatm; do
-  s[trm]=$(cat $e | grep "treated${trm}" | cut -f1 | sed 's/[^ ]* */file.&/g')
+  s[trm]=$(cat $e | grep "treated${trm}" | cut -f1)
 done
 
 # Create a file with neutral controls
@@ -58,7 +58,7 @@ if [[ $i == 0 ]]; then
   exit 2
 fi
 # Check if SampleName's are coincident with exper.design file
-allnames=$(cat $e | cut -f1 | sed 's/[^ ]* */file.&/g')
+allnames=$(cat $e | cut -f1)
 fastqnames=$(head -n1 ${countfile} | cut -f 3-)
 fastqnames=$(echo ",$fastqnames," | tr "[:cntrl:]" ",")
 for samp in $allnames; do
