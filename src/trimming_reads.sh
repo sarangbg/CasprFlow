@@ -492,7 +492,7 @@ for fastqfile in $f; do
     paste -d"\t" \
     <(cat "${q}/intermediate/sgRNA2_${nametwo}.fastq") \
     <(cat "${q}/intermediate/sgRNA1_${nametwo}.fastq") | \
-    awk 'BEGIN {FS="\t" }NR%2==1{print $1}NR%2==0{print $1$2}' | \
+    awk 'BEGIN {FS="\t" }NR%2==1{print $2}NR%2==0{print $1$2}' | \
     gzip > "${q}/intermediate/sgRNA2_sgRNA1_${name}"
     # Remove intermediate files that have been generated
     rm "${q}/intermediate/sgRNA1_${nametwo}.fastq" \

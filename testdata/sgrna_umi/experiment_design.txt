@@ -1,0 +1,8 @@
+ntu_r1_d4_ag	1	control1
+ntu_r1_d28_ag	1	treated1
+ntu_r2_d4_ag	2	control2
+ntu_r2_d28_ag	2	treated2
+ntu_r1_d4_ag	1	control3
+ntu_r2_d4_ag	2	control3
+ntu_r1_d28_ag	1	treated3
+ntu_r2_d28_ag	2	treated3

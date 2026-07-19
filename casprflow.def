@@ -14,7 +14,7 @@ From: condaforge/mambaforge:latest
         r-base=3.5.1 r-xtable \
         matplotlib seaborn xlsxwriter jupyterlab ghostscript openjdk bc file\
         cutadapt=1.18 star=2.7 bbmap=38.86 samtools=1.9 \
-        mageck=0.5.9.3 vispr=0.4.16 fastqc=0.11
+        mageck=0.5.9.3 vispr=0.4.16 fastqc=0.11 pysam>=0.24.0
 
     # Install PBNPA from a CRAN mirror
     # (dependencies=TRUE forces it to pull 'metaRNASeq', which PBNPA requires)

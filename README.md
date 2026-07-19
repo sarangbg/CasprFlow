@@ -7,7 +7,21 @@ It is built on top of [CASPR](https://doi.org/10.1093/bioinformatics/btz811) wit
 2. **UMI-based analysis:** Supports both sgRNA and pgRNA screens with unique molecular identifiers (UMIs).
 3. **Comprehensive benchmarking:** Includes full benchmarking of the UMI mode. 
 
-It currently runs using Singularity/Apptainer. Start exploring [here](run.sh).
+**Tutorial**
+
+1. It currently runs using Singularity/Apptainer. Start exploring [here](run.sh).
+
+2. For the first two examples, the data is same as described in the original [CASPR repository](https://github.com/judithbergada/CASPR), included [here](testdata) as well. Run the pipeleine, check if the outputs match [this](outputs).
+
+3. For the third example with UMIs, the data was obtained from [Schmierer et al](https://link.springer.com/article/10.15252/msb.20177834) and subsampled using [this](dev/subsample_fastq_umi.py) script.
+
+    a) This subsampled data can be downloaded from here: zenodo link to be added soon.
+
+    b) Place the data in [this folder](testdata/sgrna_umi) and run the pipeline.
+
+    c) The results will contain two folders corresponding to the TCA and LDA mode. Using these two as inputs to [this script](dev/compare_replicate_performance.py), compare the TCA vs LDA results. The script will generate a plot like [this](outputs/sgrna_lda/screen_comparison.png). As reported by Schmierer et al, the performance in LDA mode is better than that of TCA mode.
+
+Read more in our upcoming manuscript!
 
 ---
 

@@ -78,6 +78,10 @@ qq_plot <- function(p_val, Experiment_ID, controls, ci = 0.95, nlabs = 4) {
 # Read input files
 dat = read.table(countsfile, header = T, stringsAsFactors = F)
 design = read.table(expdesign, header = F, stringsAsFactors = F)
+
+print(head(dat, n = 10))
+print(design)
+
 if (controlsfile != "") {
   ctrls_file = read.table(controlsfile)
 } else {
@@ -88,6 +92,7 @@ if (controlsfile != "") {
 all_info = list()
 counter = 1
 for (k in unlist(strsplit(controls, split=","))) {
+  # sample_idx = design[paste("file.", design$V1, sep = "") == k, 2]
   sample_idx = design[design$V1 == k, 2]
   treatm_name = design[
     design$V2 == sample_idx & grepl(

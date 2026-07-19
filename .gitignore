@@ -3,7 +3,8 @@
 
 # results of test runs
 testdata/*/results
-*results*
+results*
+testdata/sgrna_umi/ntu*
 
 # nextflow
 work

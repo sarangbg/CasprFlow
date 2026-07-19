@@ -9,7 +9,7 @@ process test {
     path count_file
 
     output:
-    path "outputs"
+    path("outputs_$count_file.simpleName/*")
 
     script:
     def src_dir = root_dir + '/src'
@@ -18,5 +18,6 @@ process test {
     mkdir intermediate
     mkdir outputs
     ${script_path} ${experiment_design} ${fdr_threshold} . ${src_dir} ${rra_controls} ${count_file}
+    mv outputs outputs_${count_file.simpleName}
     """
 }

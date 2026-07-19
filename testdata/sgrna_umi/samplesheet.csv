@@ -1,0 +1,5 @@
+name,fastq_1,fastq_2
+ntu_r1_d4_ag.fq.gz,testdata/sgrna_umi/ntu_r1_d4_ag.fq.gz,
+ntu_r1_d28_ag.fq.gz,testdata/sgrna_umi/ntu_r1_d28_ag.fq.gz,
+ntu_r2_d4_ag.fq.gz,testdata/sgrna_umi/ntu_r2_d4_ag.fq.gz,
+ntu_r2_d28_ag.fq.gz,testdata/sgrna_umi/ntu_r2_d28_ag.fq.gz,

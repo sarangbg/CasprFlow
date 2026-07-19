@@ -13,7 +13,7 @@ process align {
     path trimmed_fastq
 
     output:
-    path('alignment/*.bam'), emit: alignment_dir
+    path('alignment/*.bam'), emit: bam_files_ch
     path "table.counts.txt", emit: count_file
 
     script:

@@ -6,8 +6,11 @@ include { quality_control as qc_f } from './modules/quality_control.nf'
 include { quality_control as qc_r } from './modules/quality_control.nf'
 include { trim } from './modules/trim.nf'
 include { align } from './modules/align.nf'
-include { test } from './modules/test.nf'
+include { test as test_tca } from './modules/test.nf'
+include { test as test_lda } from './modules/test.nf'
 include { extract_umi } from './modules/extract_umi.nf'
+include { count_umi } from './modules/count_umi.nf'
+include { combine_counts } from './modules/combine_counts.nf'
 
 /*
  * Pipeline parameters
@@ -15,6 +18,8 @@ include { extract_umi } from './modules/extract_umi.nf'
 params {
     samplesheet: Path
     experiment_design: Path
+    bamsheet: String = ''
+    countfile: String = ''
     library: Path
     library_mode: String = 'sgrna'
     analysis_mode: String = 'tca'
@@ -35,57 +40,103 @@ workflow {
     main:
 
     // create channel for inputs from the samplesheet CSV file
-    // todo: can we merge the samplesheet and experiment_design file and just take one file as input
+    // TODO: can we merge the samplesheet and experiment_design file and just take one file as input
+    // TODO: use the names provided in the samplesheet 
     fastq_forward_ch = channel
         .fromPath(params.samplesheet, checkIfExists: true)
         .splitCsv(header: true)
         .map { row -> file(row.fastq_1, checkIfExists: true)}
-        .view()
 
     fastq_reverse_ch = channel
         .fromPath(params.samplesheet, checkIfExists: true)
         .splitCsv(header: true)
         .map { row -> row.fastq_2?.trim() ? file(row.fastq_2, checkIfExists: true) : file("$projectDir/assets/NO_FILE")}
-        .view()
 
-    // step 0: check if the inputs are correct
-    // check(params.fastq_forward, params.fastq_reverse, params.experiment_design, params.library, params.orientation, params.adapter_f, params.adapter_r, params.mismatches, params.bases_aligned, params.fdr_threshold, params.rra_controls,
-    // params.threads, workflow.launchDir)
+    // create empty channels which will be populated depending on the input parameters
+    qc_output_ch = channel.empty()
+    trimmed_fastq_ch = channel.empty()
+    test_outputs_lda = channel.empty()
+    count_file_lda = channel.empty()
 
-    // step 1: quality control of input fastq files using fasqc
-    qc_f(fastq_forward_ch, params.threads)
-    fastq_forward_html_ch = qc_f.out.map {fastqc_html, fastqc_zip -> fastqc_html}
-    
-    if (params.library_mode=='sgrna'){
-        qc_output_ch = qc_f.out
+    if (params.bamsheet==''){
+        // step 0: check if the inputs are correct
+        // check(params.fastq_forward, params.fastq_reverse, params.experiment_design, params.library, params.orientation, params.adapter_f, params.adapter_r, params.mismatches, params.bases_aligned, params.fdr_threshold, params.rra_controls,
+        // params.threads, workflow.launchDir)
+
+        // step 1: quality control of input fastq files using fasqc
+        qc_f(fastq_forward_ch, params.threads)
+        fastq_forward_html_ch = qc_f.out.map {fastqc_html, fastqc_zip -> fastqc_html}
+        
+        if (params.library_mode=='sgrna'){
+            qc_output_ch = qc_f.out
+        } else{
+            qc_r(fastq_reverse_ch, params.threads)
+            qc_output_ch = qc_f.out.mix(qc_r.out)
+        }
+
+        // optional step 2.0: only for UMI analysis
+        if (params.analysis_mode!='tca'){
+            println "${params.analysis_mode}"
+            extract_umi(fastq_forward_ch, params.umi_regex, params.threads, workflow.launchDir)
+            fastq_forward_ch = extract_umi.out
+        }
+        
+        // step 2: adapter trimming
+        trim(fastq_forward_ch, fastq_reverse_ch, fastq_forward_html_ch, params.library, params.orientation, params.adapter_f, params.adapter_r, params.threads, workflow.launchDir)
+        trimmed_fastq_ch = trim.out
+
+        // step 3: create STAR genome from the library file
+        create_genome(params.library, params.threads, workflow.launchDir, params.library_mode)
+
+        // step 4: map the guide reads to the library and count
+        // the genome is loaded in the ram only once when aligning on all the samples in the same process, so not passing the channel directly
+        align(fastq_reverse_ch.first(), params.library, params.mismatches, params.bases_aligned, params.threads, workflow.launchDir, params.info_alignment, create_genome.out, trimmed_fastq_ch.collect())
+        bam_files_ch = align.out.bam_files_ch
     } else{
-        qc_r(fastq_reverse_ch, params.threads)
-        qc_output_ch = qc_f.out.mix(qc_r.out)
+        bam_files_ch = channel
+            .fromPath(params.bamsheet, checkIfExists: true)
+            .splitCsv(header: true)
+            .map { row -> file(row.bam, checkIfExists: true)}
+            .view()
+    }
+
+    if (params.countfile==''){
+        // step 5: count the abundannce of guide rnas from the bam files
+        if (params.analysis_mode=='tca'){
+            count_file = align.out.count_file
+        } else{
+            count_umi(bam_files_ch, workflow.launchDir)
+            combine_counts(count_umi.out.collect(), params.library, workflow.launchDir)
+            count_file = combine_counts.out.tca_counts
+            count_file_lda = combine_counts.out.lda_counts
+        }
+    } else{
+        count_file = file(params.countfile, checkIfExists: true)
     }
     
-    // step 2: adapter trimming
-    trim(fastq_forward_ch, fastq_reverse_ch, fastq_forward_html_ch, params.library, params.orientation, params.adapter_f, params.adapter_r, params.threads, workflow.launchDir)
-
-    // step 3: create STAR genome from the library file
-    create_genome(params.library, params.threads, workflow.launchDir, params.library_mode)
-
-    // step 4: map the guide reads to the library and count
-    // the genome is loaded in the ram only once when aligning on all the samples in the same process, so not passing the channel directly
-    align(fastq_reverse_ch.first(), params.library, params.mismatches, params.bases_aligned, params.threads, workflow.launchDir, params.info_alignment, create_genome.out, trim.out.collect())
-
-    // step 5: statistical testing to identify hits
-    test(params.experiment_design, params.fdr_threshold, params.rra_controls, workflow.launchDir, align.out.count_file)
+    // step 6: statistical testing to identify hits
+    test_tca(params.experiment_design, params.fdr_threshold, params.rra_controls, workflow.launchDir, count_file)
+    if (params.analysis_mode=='lda'){
+        test_lda(params.experiment_design, params.fdr_threshold, params.rra_controls, workflow.launchDir, count_file_lda)
+        test_outputs_lda = test_lda.out
+    }
 
     publish:
     qc = qc_output_ch
-    trim = trim.out
-    count_file = align.out.count_file
-    test_outputs = test.out
+    umi = fastq_forward_ch
+    trim = trimmed_fastq_ch
+    count_file = count_file
+    count_file_umi = count_file_lda
+    test_outputs = test_tca.out
+    test_outputs_umi = test_outputs_lda
 }
 
 output {
     qc {
         path 'qc'
+    }
+    umi {
+        path '.'
     }
     trim {
         path '.'
@@ -94,7 +145,15 @@ output {
         path '.'
         mode 'copy'
     }
+    count_file_umi {
+        path '.'
+        mode 'copy'
+    }
     test_outputs {
+        path '.'
+        mode 'copy'
+    }
+    test_outputs_umi {
         path '.'
         mode 'copy'
     }
