@@ -23,7 +23,8 @@ params {
     library: Path
     library_mode: String = 'sgrna'
     analysis_mode: String = 'tca'
-    umi_regex: String = 'TGGA(......)AACT'
+    // 'TGGA(......)AACT'
+    umi_regex: String = 'X'
     orientation: Integer = 53
     adapter_f: String = 'ACCG'
     adapter_r: String = 'AAAC'
@@ -77,8 +78,9 @@ workflow {
         // optional step 2.0: only for UMI analysis
         if (params.analysis_mode!='tca'){
             println "${params.analysis_mode}"
-            extract_umi(fastq_forward_ch, params.umi_regex, params.threads, workflow.launchDir)
-            fastq_forward_ch = extract_umi.out
+            extract_umi(fastq_forward_ch, fastq_reverse_ch, params.umi_regex, params.threads, workflow.launchDir)
+            fastq_forward_ch = extract_umi.out.fastq_forward_umi
+            fastq_reverse_ch = extract_umi.out.fastq_reverse_umi
         }
         
         // step 2: adapter trimming
@@ -91,7 +93,7 @@ workflow {
         // step 4: map the guide reads to the library and count
         // the genome is loaded in the ram only once when aligning on all the samples in the same process, so not passing the channel directly
         align(fastq_reverse_ch.first(), params.library, params.mismatches, params.bases_aligned, params.threads, workflow.launchDir, params.info_alignment, create_genome.out, trimmed_fastq_ch.collect())
-        bam_files_ch = align.out.bam_files_ch
+        bam_files_ch = align.out.bam_files_ch.flatten().view()
     } else{
         bam_files_ch = channel
             .fromPath(params.bamsheet, checkIfExists: true)

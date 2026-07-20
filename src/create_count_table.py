@@ -21,7 +21,8 @@ def create_count_table(library_file, count_file_list):
             count_df = count_df.join(tmp_df,how='outer').fillna(0).astype(int)
 
     lib_df = pd.read_csv(library_file, sep='\t',header=None).rename(columns={0:'guide_id',1:'gene'})
-    lib_df.drop(columns=2,inplace=True)
+    # lib_df.drop(columns=2,inplace=True)
+    lib_df = lib_df[['guide_id', 'gene']].copy()
 
     # create URA table (like mageck-ibar)
     count_df = lib_df.merge(count_df.reset_index(), on='guide_id')

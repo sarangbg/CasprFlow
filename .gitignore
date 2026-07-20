@@ -9,6 +9,9 @@ testdata/sgrna_umi/ntu*
 # nextflow
 work
 *.nextflow*
+*.sif
+slurm*
+debug*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
