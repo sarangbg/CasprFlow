@@ -4,7 +4,8 @@
 # results of test runs
 testdata/*/results
 results*
-testdata/sgrna_umi/ntu*
+testdata/sgrna_lda/ntu*
+testdata/sgrna_ura/SRR*
 
 # nextflow
 work

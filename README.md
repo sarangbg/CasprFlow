@@ -21,6 +21,14 @@ It is built on top of [CASPR](https://doi.org/10.1093/bioinformatics/btz811) wit
 
     c) The results will contain two folders corresponding to the TCA and LDA mode. Using these two as inputs to [this script](dev/compare_replicate_performance.py), compare the TCA vs LDA results. The script will generate a plot like [this](outputs/sgrna_lda/screen_comparison.png). As reported by Schmierer et al, the performance in LDA mode is better than that of TCA mode.
 
+4. For the fourth example with UMIs, the data was obtained from [Zhu et al](https://link.springer.com/article/10.1186/s13059-019-1628-0) for the TcdB toxicity screening at MOI of 0.3.
+
+    a) Download the data using SRA tools with these IDs: SRR7975589, SRR7975590, SRR7975591 and SRR7975592
+
+    b) Place the forward fastq files in [this folder](testdata/sgrna_ura) and run the pipeline.
+
+    c) The results will contain two folders corresponding to the TCA and URA mode. Using these two as inputs to [this script](dev/compare_replicate_performance.py), compare the TCA vs URA results. The script will generate a plot like [this](outputs/sgrna_lda/screen_comparison.png). As reported by Schmierer et al, the performance in LDA mode is better than that of TCA mode.
+
 Read more in our upcoming manuscript!
 
 ---

@@ -458,14 +458,26 @@ for fastqfile in $f; do
 
   # Do the trimming of the reads using previously defined functions
   echo "Preparing ${nametwo} reads:"
-  if [[ $o == 35 ]]; then
-    trimming_35 \
-    "$fastqfile" "$nametwo" "${reverse[$i-1]}" "$a" "$A" "$lguide1" "$lguide2" \
-    "${ftrim[$i]}" "${fpos[$i]}" "${rtrim[$i]}" "${rpos[$i]}"
+
+  # If your sequence of interest is surrounded by a 5’ and a 3’ adapter, and you want to remove both adapters, then you can use a linked adapter. 
+  # Refer to cutadapt documentation: https://cutadapt.readthedocs.io/en/stable/guide.html
+  if [[ "$a" == *"..."* ]]; then
+    echo "Cutdapt is using linked adapters"
+    cutadapt -j $t -g $a -l $lguide1 --minimum-length 15 \
+    -o "${q}/intermediate/tmp_$nametwo.fastq.gz" \
+    $fastqfile > "${q}/intermediate/trim_stat_${nametwo}.txt"
+    mv \
+    "${q}/intermediate/tmp_$nametwo.fastq.gz" "${q}/intermediate/sgRNA2_sgRNA1_${name}"
   else
-    trimming_53 \
-    "$fastqfile" "$nametwo" "${reverse[$i-1]}" "$a" "$A" "$lguide1" "$lguide2" \
-    "${ftrim[$i]}" "${fpos[$i]}" "${rtrim[$i]}" "${rpos[$i]}" "$name"
+    if [[ $o == 35 ]]; then
+      trimming_35 \
+      "$fastqfile" "$nametwo" "${reverse[$i-1]}" "$a" "$A" "$lguide1" "$lguide2" \
+      "${ftrim[$i]}" "${fpos[$i]}" "${rtrim[$i]}" "${rpos[$i]}"
+    else
+      trimming_53 \
+      "$fastqfile" "$nametwo" "${reverse[$i-1]}" "$a" "$A" "$lguide1" "$lguide2" \
+      "${ftrim[$i]}" "${fpos[$i]}" "${rtrim[$i]}" "${rpos[$i]}" "$name"
+    fi
   fi
 
   echo "Combining and preparing reads for alignment"
@@ -510,17 +522,19 @@ echo "Trimming of reads finished succesfully"
 ############################
 currentdir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-# Create plots with the trimming statistics
-printf "\nGenerating plots to see trimming statistics\n"
-# Collect needed information previously created
-triminf=$(cat "${q}/intermediate/useful_information.txt" | \
-        awk 'NR>1' | sort -k1 | awk '{print $2}')
-# Run R script
-Rscript --vanilla $currentdir/trimming_statistics.R \
-        "$triminf" "$q" ${q}/intermediate/trim_stat* \
-|| (echo "Problem with R. Check if the R version is correct." && exit 1)
-if [[ $(echo $?) != 0 ]]; then exit 1; fi # Exit if there has been an error.
-echo "Plots were created successfully"
+if [[ "$a" != *"..."* ]]; then
+  # Create plots with the trimming statistics
+  printf "\nGenerating plots to see trimming statistics\n"
+  # Collect needed information previously created
+  triminf=$(cat "${q}/intermediate/useful_information.txt" | \
+          awk 'NR>1' | sort -k1 | awk '{print $2}')
+  # Run R script
+  Rscript --vanilla $currentdir/trimming_statistics.R \
+          "$triminf" "$q" ${q}/intermediate/trim_stat* \
+  || (echo "Problem with R. Check if the R version is correct." && exit 1)
+  if [[ $(echo $?) != 0 ]]; then exit 1; fi # Exit if there has been an error.
+  echo "Plots were created successfully"
+fi
 
 ##########
 ## DONE ##

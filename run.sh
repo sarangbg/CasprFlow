@@ -17,23 +17,9 @@ SCRIPT_DIR=$(realpath "$SCRIPT_DIR")
 ## example 1: sgrna ##
 ######################
 
-# DATA_DIR="$SCRIPT_DIR/testdata/sgrna"
+DATA_DIR="$SCRIPT_DIR/testdata/sgrna"
 
-# cmd="nextflow run . -profile singularity -o results_sgrna \
-#     --samplesheet $DATA_DIR/samplesheet.csv \
-#     --experiment_design $DATA_DIR/expdesign.txt --library $DATA_DIR/library.txt --rra_controls $DATA_DIR/controlfile.txt"
-
-# echo "$cmd"
-
-# $cmd
-
-######################
-## example 2: pgrna ##
-######################
-
-DATA_DIR="$SCRIPT_DIR/testdata/pgrna"
-
-cmd="nextflow run . -profile singularity -o results_pgrna --library_mode pgrna --bases_aligned 30 \
+cmd="nextflow run . -profile singularity -o results_sgrna \
     --samplesheet $DATA_DIR/samplesheet.csv \
     --experiment_design $DATA_DIR/expdesign.txt --library $DATA_DIR/library.txt --rra_controls $DATA_DIR/controlfile.txt"
 
@@ -41,15 +27,44 @@ echo "$cmd"
 
 $cmd
 
-##########################
-## example 3: sgrna umi ##
-##########################
+######################
+## example 2: pgrna ##
+######################
+
+# DATA_DIR="$SCRIPT_DIR/testdata/pgrna"
+
+# cmd="nextflow run . -profile singularity -o results_pgrna_test --library_mode pgrna --bases_aligned 30 \
+#     --samplesheet $DATA_DIR/samplesheet.csv \
+#     --experiment_design $DATA_DIR/expdesign.txt --library $DATA_DIR/library.txt --rra_controls $DATA_DIR/controlfile.txt"
+
+# echo "$cmd"
+
+# $cmd
+
+######################################
+## example 3: sgrna umi in lda mode ##
+######################################
 
 # DATA_DIR="$SCRIPT_DIR/testdata/sgrna_umi"
 
 # cmd="nextflow run . -profile singularity --analysis_mode lda --umi_regex '' -o results_sgrna_lda \
 #     --samplesheet $DATA_DIR/samplesheet.csv \
 #     --experiment_design $DATA_DIR/experiment_design.txt --library $DATA_DIR/library.txt"
+
+# echo "$cmd"
+
+# $cmd
+
+######################################
+## example 4: sgrna umi in ura mode ##
+######################################
+
+# DATA_DIR="$SCRIPT_DIR/testdata/sgrna_ura"
+
+# cmd="nextflow run . -profile singularity --analysis_mode ura --umi_regex 'TGGA(......)AACA' -o results_sgrna_ura \
+#     --adapter_f 'ACCG...GTTT' --samplesheet $DATA_DIR/samplesheet_moi_03.csv \
+#     --experiment_design $DATA_DIR/experiment_design_moi_03.txt \
+#     --library $DATA_DIR/library.tsv --umi_library $DATA_DIR/library_ibar.tsv"
 
 # echo "$cmd"
 

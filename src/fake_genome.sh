@@ -48,7 +48,8 @@ STAR --runThreadN $t \
 --outFileNamePrefix "${q}/genome/" \
 --outTmpDir "${q}/temporal" \
 --genomeDir "${q}/genome" \
---genomeFastaFiles "${q}/genome/genome.fasta"
+--genomeFastaFiles "${q}/genome/genome.fasta" \
+--limitGenomeGenerateRAM 41000000000
 # Remove temporal directory if exists
 rm -rf "${q}/temporal"
 

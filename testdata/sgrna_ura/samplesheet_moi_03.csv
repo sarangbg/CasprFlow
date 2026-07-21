@@ -1,0 +1,5 @@
+name,fastq_1,fastq_2
+SRR7975589_1,testdata/sgrna_ura/SRR7975589_1.fastq.gz,
+SRR7975590_1,testdata/sgrna_ura/SRR7975590_1.fastq.gz,
+SRR7975591_1,testdata/sgrna_ura/SRR7975591_1.fastq.gz,
+SRR7975592_1,testdata/sgrna_ura/SRR7975592_1.fastq.gz,

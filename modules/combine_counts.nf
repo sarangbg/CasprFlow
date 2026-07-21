@@ -4,6 +4,7 @@ process combine_counts {
     input:
     path count_files
     path library
+    path umi_library
     val root_dir
 
     output:
@@ -14,6 +15,6 @@ process combine_counts {
     script:
     def script_path = root_dir + '/src/create_count_table.py'
     """
-    python ${script_path} ${library} ${count_files}
+    python ${script_path} ${library} ${umi_library} ${count_files}
     """
 }

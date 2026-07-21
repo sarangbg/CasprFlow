@@ -8,6 +8,7 @@ include { trim } from './modules/trim.nf'
 include { align } from './modules/align.nf'
 include { test as test_tca } from './modules/test.nf'
 include { test as test_lda } from './modules/test.nf'
+include { test_mageck_ibar } from './modules/test_mageck_ibar.nf'
 include { extract_umi } from './modules/extract_umi.nf'
 include { count_umi } from './modules/count_umi.nf'
 include { combine_counts } from './modules/combine_counts.nf'
@@ -20,7 +21,10 @@ params {
     experiment_design: Path
     bamsheet: String = ''
     countfile: String = ''
+    countfilelda: String = ''
+    countfileura: String = ''
     library: Path
+    umi_library: String = ''
     library_mode: String = 'sgrna'
     analysis_mode: String = 'tca'
     // 'TGGA(......)AACT'
@@ -30,7 +34,7 @@ params {
     adapter_r: String = 'AAAC'
     mismatches: Integer = 0
     bases_aligned: Integer = 20
-    fdr_threshold: Float = 0.1
+    fdr_threshold: Float = 0.25
     rra_controls: String = '""'
     threads: Integer = 5
     info_alignment: String = '0'
@@ -56,8 +60,9 @@ workflow {
     // create empty channels which will be populated depending on the input parameters
     qc_output_ch = channel.empty()
     trimmed_fastq_ch = channel.empty()
-    test_outputs_lda = channel.empty()
     count_file_lda = channel.empty()
+    count_file_ura = channel.empty()
+    test_outputs_umi = channel.empty()
 
     if (params.bamsheet==''){
         // step 0: check if the inputs are correct
@@ -102,25 +107,32 @@ workflow {
             .view()
     }
 
+    // step 5: count the abundannce of guide rnas from the bam files
     if (params.countfile==''){
-        // step 5: count the abundannce of guide rnas from the bam files
         if (params.analysis_mode=='tca'){
             count_file = align.out.count_file
         } else{
             count_umi(bam_files_ch, workflow.launchDir)
-            combine_counts(count_umi.out.collect(), params.library, workflow.launchDir)
+            umi_library_file = params.umi_library=='' ? file("$projectDir/assets/NO_FILE") : file(params.umi_library, checkIfExists: true)
+            combine_counts(count_umi.out.collect(), params.library, umi_library_file, workflow.launchDir)
+            count_file_ura = combine_counts.out.ura_counts
             count_file = combine_counts.out.tca_counts
             count_file_lda = combine_counts.out.lda_counts
         }
     } else{
         count_file = file(params.countfile, checkIfExists: true)
+        count_file_ura = file(params.countfileura, checkIfExists: true)
+        count_file_lda = file(params.countfilelda, checkIfExists: true)
     }
     
     // step 6: statistical testing to identify hits
     test_tca(params.experiment_design, params.fdr_threshold, params.rra_controls, workflow.launchDir, count_file)
     if (params.analysis_mode=='lda'){
         test_lda(params.experiment_design, params.fdr_threshold, params.rra_controls, workflow.launchDir, count_file_lda)
-        test_outputs_lda = test_lda.out
+        test_outputs_umi = test_lda.out
+    } else if (params.analysis_mode=='ura'){
+        test_mageck_ibar(params.experiment_design, params.fdr_threshold, workflow.launchDir, count_file_ura)
+        test_outputs_umi = test_mageck_ibar.out
     }
 
     publish:
@@ -128,9 +140,10 @@ workflow {
     umi = fastq_forward_ch
     trim = trimmed_fastq_ch
     count_file = count_file
-    count_file_umi = count_file_lda
+    count_file_lda = count_file_lda
+    count_file_ura = count_file_ura
     test_outputs = test_tca.out
-    test_outputs_umi = test_outputs_lda
+    test_outputs_umi = test_outputs_umi
 }
 
 output {
@@ -147,7 +160,11 @@ output {
         path '.'
         mode 'copy'
     }
-    count_file_umi {
+    count_file_lda {
+        path '.'
+        mode 'copy'
+    }
+    count_file_ura {
         path '.'
         mode 'copy'
     }

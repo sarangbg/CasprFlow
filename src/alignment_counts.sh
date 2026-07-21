@@ -64,10 +64,14 @@ for i in $trimdir; do
     --outTmpDir "${q}/temporal" \
     --outReadsUnmapped Fastx \
     --outFileNamePrefix "${q}/${nametwo}_" \
-    --outFilterMatchNminOverLread 0.1 \
     --outFilterMismatchNoverLmax 0.9 \
-    --outFilterScoreMinOverLread 0.1 \
+    --alignEndsType EndToEnd \
     --readMapNumber -1
+
+    # EndToEnd ensures no base clipping
+    # --outFilterMatchNminOverLread 0.1 \
+    # --outFilterScoreMinOverLread 0.1 \
+
   # Remove temporal directory if exists
   rm -rf "${q}/temporal"
 

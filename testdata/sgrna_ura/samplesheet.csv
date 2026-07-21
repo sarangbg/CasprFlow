@@ -1,0 +1,13 @@
+name,fastq_1,fastq_2
+SRR7975589_1,testdata/sgrna_ura/SRR7975589_1.fastq.gz,
+SRR7975590_1,testdata/sgrna_ura/SRR7975590_1.fastq.gz,
+SRR7975591_1,testdata/sgrna_ura/SRR7975591_1.fastq.gz,
+SRR7975592_1,testdata/sgrna_ura/SRR7975592_1.fastq.gz,
+SRR7975589_1,testdata/sgrna_ura/SRR7975589_1.fastq.gz,
+SRR7975590_1,testdata/sgrna_ura/SRR7975590_1.fastq.gz,
+SRR7975593_1,testdata/sgrna_ura/SRR7975593_1.fastq.gz,
+SRR7975594_1,testdata/sgrna_ura/SRR7975594_1.fastq.gz,
+SRR7975589_1,testdata/sgrna_ura/SRR7975589_1.fastq.gz,
+SRR7975590_1,testdata/sgrna_ura/SRR7975590_1.fastq.gz,
+SRR7975595_1,testdata/sgrna_ura/SRR7975595_1.fastq.gz,
+SRR7975596_1,testdata/sgrna_ura/SRR7975596_1.fastq.gz,
