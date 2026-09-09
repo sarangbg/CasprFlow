@@ -12,6 +12,7 @@ include { test_mageck_ibar } from './modules/test_mageck_ibar.nf'
 include { extract_umi } from './modules/extract_umi.nf'
 include { count_umi } from './modules/count_umi.nf'
 include { combine_counts } from './modules/combine_counts.nf'
+include { count_read } from './modules/count_read.nf'
 
 /*
  * Pipeline parameters
@@ -57,6 +58,8 @@ workflow {
         .splitCsv(header: true)
         .map { row -> row.fastq_2?.trim() ? file(row.fastq_2, checkIfExists: true) : file("$projectDir/assets/NO_FILE")}
 
+    all_files_ch = fastq_forward_ch.map { f -> [ 'raw', f, f ] }
+
     // create empty channels which will be populated depending on the input parameters
     qc_output_ch = channel.empty()
     trimmed_fastq_ch = channel.empty()
@@ -86,11 +89,13 @@ workflow {
             extract_umi(fastq_forward_ch, fastq_reverse_ch, params.umi_regex, params.threads, workflow.launchDir)
             fastq_forward_ch = extract_umi.out.fastq_forward_umi
             fastq_reverse_ch = extract_umi.out.fastq_reverse_umi
+            all_files_ch = all_files_ch.mix(fastq_forward_ch.map { f -> [ 'extract_umi', f, f ] })
         }
         
         // step 2: adapter trimming
         trim(fastq_forward_ch, fastq_reverse_ch, fastq_forward_html_ch, params.library, params.orientation, params.adapter_f, params.adapter_r, params.threads, workflow.launchDir)
         trimmed_fastq_ch = trim.out
+        all_files_ch = all_files_ch.mix(trimmed_fastq_ch.map { f -> [ 'trim', f, f ] })
 
         // step 3: create STAR genome from the library file
         create_genome(params.library, params.threads, workflow.launchDir, params.library_mode)
@@ -99,6 +104,7 @@ workflow {
         // the genome is loaded in the ram only once when aligning on all the samples in the same process, so not passing the channel directly
         align(fastq_reverse_ch.first(), params.library, params.mismatches, params.bases_aligned, params.threads, workflow.launchDir, params.info_alignment, create_genome.out, trimmed_fastq_ch.collect())
         bam_files_ch = align.out.bam_files_ch.flatten().view()
+        all_files_ch = all_files_ch.mix(bam_files_ch.map { f -> [ 'align', f, f ] })
     } else{
         bam_files_ch = channel
             .fromPath(params.bamsheet, checkIfExists: true)
@@ -106,6 +112,11 @@ workflow {
             .map { row -> file(row.bam, checkIfExists: true)}
             .view()
     }
+
+    // genearte read statistics
+    count_read(all_files_ch)
+    .collectFile(name: 'read_counts.tsv', storeDir: workflow.outputDir,
+                 seed: "sample\tpath\tstep\tcount\n", sort: true)
 
     // step 5: count the abundannce of guide rnas from the bam files
     if (params.countfile==''){
