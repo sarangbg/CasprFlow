@@ -11,6 +11,7 @@ process align {
     val info_alignment
     val genome_dir
     path trimmed_fastq
+    val library_mode
 
     output:
     path('alignment/*.bam'), emit: bam_files_ch
@@ -23,6 +24,6 @@ process align {
     """
     mkdir alignment
     mkdir alignment/intermediate
-    ${script_path} ${mismatches} ${bases_aligned} ${threads} alignment "${fastq_reverse_2}" ${library}  ${info_alignment} ${genome_dir} "${trimmed_fastq}"
+    ${script_path} ${mismatches} ${bases_aligned} ${threads} alignment "${fastq_reverse_2}" ${library}  ${info_alignment} ${genome_dir} "${trimmed_fastq}" ${library_mode}
     """
 }

@@ -102,7 +102,7 @@ workflow {
 
         // step 4: map the guide reads to the library and count
         // the genome is loaded in the ram only once when aligning on all the samples in the same process, so not passing the channel directly
-        align(fastq_reverse_ch.first(), params.library, params.mismatches, params.bases_aligned, params.threads, workflow.launchDir, params.info_alignment, create_genome.out, trimmed_fastq_ch.collect())
+        align(fastq_reverse_ch.first(), params.library, params.mismatches, params.bases_aligned, params.threads, workflow.launchDir, params.info_alignment, create_genome.out, trimmed_fastq_ch.collect(), params.library_mode)
         bam_files_ch = align.out.bam_files_ch.flatten().view()
         all_files_ch = all_files_ch.mix(bam_files_ch.map { f -> [ 'align', f, f ] })
     } else{

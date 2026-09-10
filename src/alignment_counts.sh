@@ -7,7 +7,7 @@ set -e
 #################################
 
 # Relationship between input parameters and the ones used here
-m=$1; b=$2; t=$3; q=$4; r=$5; l=$6; info=$7; genomedir=$8; trimdir=$9
+m=$1; b=$2; t=$3; q=$4; r=$5; l=$6; info=$7; genomedir=$8; trimdir=$9; library_mode=$10
 
 # Compute length of the guide RNAs
 lguide1=$(awk 'NR==1 {print $3}' $l | wc -c)
@@ -30,6 +30,11 @@ else
   req_shm=10000000000 #10GB
   shm_flags="--genomeLoad LoadAndKeep --limitBAMsortRAM $req_shm"
   echo "Using shared memory to load the genome."
+fi
+
+# EndToEnd ensures no base clipping, required for pegrna mode
+if [[ $library_mode == 'pegrna' ]]; then
+  shm_flags="$shm_flags --alignEndsType EndToEnd"
 fi
 
 ##############################################
@@ -65,10 +70,8 @@ for i in $trimdir; do
     --outReadsUnmapped Fastx \
     --outFileNamePrefix "${q}/${nametwo}_" \
     --outFilterMismatchNoverLmax 0.9 \
-    --alignEndsType EndToEnd \
     --readMapNumber -1
 
-    # EndToEnd ensures no base clipping
     # --outFilterMatchNminOverLread 0.1 \
     # --outFilterScoreMinOverLread 0.1 \
 

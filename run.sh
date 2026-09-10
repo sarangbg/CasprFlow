@@ -76,7 +76,7 @@ $cmd
 
 # DATA_DIR="$SCRIPT_DIR/testdata/pegrna"
 
-# cmd="nextflow run . -ansi-log false --threads 8 -profile singularity --analysis_mode tca --library_mode pgrna -o results_pegrna \
+# cmd="nextflow run . -ansi-log false --threads 8 -profile singularity --analysis_mode tca --library_mode pegrna -o results_pegrna \
 #     --adapter_f 'CCTTGTTT...GTTTAGAG' --adapter_r 'GTGTTAGG...GCACCGAC' --samplesheet $DATA_DIR/samplesheet.csv \
 #     --experiment_design $DATA_DIR/expdesign.txt --library $DATA_DIR/ren_library_casprflow.tsv \
 #     --rra_controls $DATA_DIR/ren_library_neutral_controls.tsv"
