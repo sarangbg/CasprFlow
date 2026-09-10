@@ -1,0 +1,6 @@
+d2.1_1	1	control1
+d2.2_1	2	control1
+d2.3_1	3	control1
+d30.1_1	1	treated1
+d30.2_1	2	treated1
+d30.3_1	3	treated1

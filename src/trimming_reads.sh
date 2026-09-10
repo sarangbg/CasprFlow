@@ -463,11 +463,24 @@ for fastqfile in $f; do
   # Refer to cutadapt documentation: https://cutadapt.readthedocs.io/en/stable/guide.html
   if [[ "$a" == *"..."* ]]; then
     echo "Cutdapt is using linked adapters"
-    cutadapt -j $t -g $a -l $lguide1 --minimum-length 15 \
-    -o "${q}/intermediate/tmp_$nametwo.fastq.gz" \
-    $fastqfile > "${q}/intermediate/trim_stat_${nametwo}.txt"
-    mv \
-    "${q}/intermediate/tmp_$nametwo.fastq.gz" "${q}/intermediate/sgRNA2_sgRNA1_${name}"
+    if [[ ($r != "") ]]; then
+      # cutadapt -j $t -g $a -o "${q}/intermediate/sgRNA1_$nametwo.fastq.gz" \
+      # $fastqfile > "${q}/intermediate/trim_stat_${nametwo}.txt"
+      # reverse adapter is also assumed to be linked
+      cutadapt -j $t -g "${a};e=0.15" -G "${A};e=0.15" \
+      --maximum-length 21 --pair-filter=first \
+      -o "${q}/intermediate/sgRNA1_$nametwo.fastq" \
+      -p "${q}/intermediate/sgRNA2_intermediate_$nametwo.fastq" \
+      $fastqfile $r > "${q}/intermediate/trim_stat_${nametwo}.txt"
+    else
+      # cutadapt -j $t -g $a -l $lguide1 --minimum-length 15 \
+      # -o "${q}/intermediate/sgRNA1_$nametwo.fastq.gz" \
+      # $fastqfile > "${q}/intermediate/trim_stat_${nametwo}.txt"
+      cutadapt -j $t -g $a -e 0.15 --minimum-length 10 \
+      -o "${q}/intermediate/sgRNA1_$nametwo.fastq.gz" \
+      $fastqfile > "${q}/intermediate/trim_stat_${nametwo}.txt"
+      mv "${q}/intermediate/sgRNA1_$nametwo.fastq.gz" "${q}/intermediate/sgRNA2_sgRNA1_${name}"
+    fi
   else
     if [[ $o == 35 ]]; then
       trimming_35 \

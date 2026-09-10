@@ -35,9 +35,15 @@ sed 's/^[\t]*/>/g;s/\s/\n/g' > "${q}/genome/genome.fasta"
 
 # Compute needed --genomeSaindexNbases parameter according to STAR formula
 # Formula: genomeSaindexNbases = log2(numbases)/2 - 1
-num_bases_grna=$(cat ${q}/genome/genome.fasta | awk 'NR==4' | wc -c)
-num_grnas=$(wc -l ${q}/genome/genome.fasta | awk '{print $1/2}')
-totalbp=$(echo "$num_bases_grna * $num_grnas" | bc -l)
+
+# this assumes that all guides have same length
+# num_bases_grna=$(cat ${q}/genome/genome.fasta | awk 'NR==4' | wc -c)
+# num_grnas=$(wc -l ${q}/genome/genome.fasta | awk '{print $1/2}')
+# totalbp=$(echo "$num_bases_grna * $num_grnas" | bc -l)
+
+# if guides have different lengths
+totalbp=$(grep -v ">" ${q}/genome/genome.fasta | tr -d '\n' | wc -c)
+
 log2res=$(echo "l($totalbp)/l(2)" | bc -l)
 genomeSaind=$(echo ${log2res} | awk '{printf "%.0f\n", $1/2 - 2}')
 

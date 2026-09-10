@@ -4,8 +4,10 @@
 # results of test runs
 testdata/*/results
 results*
-testdata/sgrna_lda/ntu*
-testdata/sgrna_ura/SRR*
+testdata/*/*.fq.gz*
+testdata/*/*.fastq.gz*
+testdata/*/*bamsheet*
+testdata/*tmp*/
 
 # nextflow
 work

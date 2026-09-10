@@ -132,8 +132,8 @@ workflow {
         }
     } else{
         count_file = file(params.countfile, checkIfExists: true)
-        count_file_ura = file(params.countfileura, checkIfExists: true)
-        count_file_lda = file(params.countfilelda, checkIfExists: true)
+        count_file_ura = params.countfileura=='' ? file("$projectDir/assets/NO_FILE") : file(params.countfileura, checkIfExists: true)
+        count_file_lda = params.countfilelda=='' ? file("$projectDir/assets/NO_FILE") : file(params.countfilelda, checkIfExists: true)
     }
     
     // step 6: statistical testing to identify hits

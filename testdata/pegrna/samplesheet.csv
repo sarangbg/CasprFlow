@@ -1,0 +1,7 @@
+name,fastq_1,fastq_2
+d2.1_1,testdata/pegrna/d2.1_1.fastq.gz,testdata/pegrna/d2.1_2.fastq.gz
+d2.2_1,testdata/pegrna/d2.2_1.fastq.gz,testdata/pegrna/d2.2_2.fastq.gz
+d2.3_1,testdata/pegrna/d2.3_1.fastq.gz,testdata/pegrna/d2.3_2.fastq.gz
+d30.1_1,testdata/pegrna/d30.1_1.fastq.gz,testdata/pegrna/d30.1_2.fastq.gz
+d30.2_1,testdata/pegrna/d30.2_1.fastq.gz,testdata/pegrna/d30.2_2.fastq.gz
+d30.3_1,testdata/pegrna/d30.3_1.fastq.gz,testdata/pegrna/d30.3_2.fastq.gz

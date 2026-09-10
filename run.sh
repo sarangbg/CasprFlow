@@ -33,7 +33,7 @@ $cmd
 
 # DATA_DIR="$SCRIPT_DIR/testdata/pgrna"
 
-# cmd="nextflow run . -profile singularity -o results_pgrna_test --library_mode pgrna --bases_aligned 30 \
+# cmd="nextflow run . -profile singularity -o results_pgrna --library_mode pgrna --bases_aligned 30 \
 #     --samplesheet $DATA_DIR/samplesheet.csv \
 #     --experiment_design $DATA_DIR/expdesign.txt --library $DATA_DIR/library.txt --rra_controls $DATA_DIR/controlfile.txt"
 
@@ -65,6 +65,21 @@ $cmd
 #     --adapter_f 'ACCG...GTTT' --samplesheet $DATA_DIR/samplesheet_moi_03.csv \
 #     --experiment_design $DATA_DIR/experiment_design_moi_03.txt \
 #     --library $DATA_DIR/library.tsv --umi_library $DATA_DIR/library_ibar.tsv"
+
+# echo "$cmd"
+
+# $cmd
+
+######################################
+## example 5: pegrna in tca mode ##
+######################################
+
+# DATA_DIR="$SCRIPT_DIR/testdata/pegrna"
+
+# cmd="nextflow run . -ansi-log false --threads 8 -profile singularity --analysis_mode tca --library_mode pgrna -o results_pegrna \
+#     --adapter_f 'CCTTGTTT...GTTTAGAG' --adapter_r 'GTGTTAGG...GCACCGAC' --samplesheet $DATA_DIR/samplesheet.csv \
+#     --experiment_design $DATA_DIR/expdesign.txt --library $DATA_DIR/ren_library_casprflow.tsv \
+#     --rra_controls $DATA_DIR/ren_library_neutral_controls.tsv"
 
 # echo "$cmd"
 
