@@ -12,12 +12,11 @@ process test {
     path("outputs_$count_file.simpleName/*")
 
     script:
-    def src_dir = root_dir + '/src'
-    def script_path = root_dir + '/src/test.sh'
+    def src_dir = root_dir + '/bin'
     """
     mkdir intermediate
     mkdir outputs
-    ${script_path} ${experiment_design} ${fdr_threshold} . ${src_dir} ${rra_controls} ${count_file}
+    test.sh ${experiment_design} ${fdr_threshold} . ${src_dir} ${rra_controls} ${count_file}
     mv outputs outputs_${count_file.simpleName}
     """
 }

@@ -18,13 +18,15 @@ SCRIPT_DIR=$(realpath "$SCRIPT_DIR")
 ######################
 
 DATA_DIR="$SCRIPT_DIR/testdata/sgrna"
-
-cmd="nextflow run . -profile singularity -o results_sgrna \
+#-dump-hashes
+# -resume
+cmd="nextflow run . -ansi-log true -profile singularity -o results_sgrna \
     --samplesheet $DATA_DIR/samplesheet.csv \
     --experiment_design $DATA_DIR/expdesign.txt --library $DATA_DIR/library.txt --rra_controls $DATA_DIR/controlfile.txt"
 
 echo "$cmd"
 
+# $cmd > run2.log 2>&1
 $cmd
 
 ######################

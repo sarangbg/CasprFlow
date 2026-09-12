@@ -74,7 +74,7 @@ workflow {
 
         // step 1: quality control of input fastq files using fasqc
         qc_f(fastq_forward_ch, params.threads)
-        fastq_forward_html_ch = qc_f.out.map {fastqc_html, fastqc_zip -> fastqc_html}
+        // fastq_forward_html_ch = qc_f.out.map {fastqc_html, fastqc_zip -> fastqc_html}
         
         if (params.library_mode=='sgrna'){
             qc_output_ch = qc_f.out
@@ -83,34 +83,37 @@ workflow {
             qc_output_ch = qc_f.out.mix(qc_r.out)
         }
 
+        fastq_forward_html_ch = qc_output_ch.map {fastqc_html, fastqc_zip -> fastqc_html}
+        fastq_forward_html = fastq_forward_html_ch.toSortedList().map { list -> list[0] }
+
         // optional step 2.0: only for UMI analysis
         if (params.analysis_mode!='tca'){
             println "${params.analysis_mode}"
-            extract_umi(fastq_forward_ch, fastq_reverse_ch, params.umi_regex, params.threads, workflow.launchDir)
+            extract_umi(fastq_forward_ch, fastq_reverse_ch, params.umi_regex, params.threads)
             fastq_forward_ch = extract_umi.out.fastq_forward_umi
             fastq_reverse_ch = extract_umi.out.fastq_reverse_umi
             all_files_ch = all_files_ch.mix(fastq_forward_ch.map { f -> [ 'extract_umi', f, f ] })
         }
         
         // step 2: adapter trimming
-        trim(fastq_forward_ch, fastq_reverse_ch, fastq_forward_html_ch, params.library, params.orientation, params.adapter_f, params.adapter_r, params.threads, workflow.launchDir)
+        trim(fastq_forward_ch, fastq_reverse_ch, fastq_forward_html, params.library, params.orientation, params.adapter_f, params.adapter_r, params.threads)
         trimmed_fastq_ch = trim.out
+        trimmed_fastq_list = trimmed_fastq_ch.toSortedList()
         all_files_ch = all_files_ch.mix(trimmed_fastq_ch.map { f -> [ 'trim', f, f ] })
 
         // step 3: create STAR genome from the library file
-        create_genome(params.library, params.threads, workflow.launchDir, params.library_mode)
+        create_genome(params.library, params.threads, params.library_mode)
 
         // step 4: map the guide reads to the library and count
         // the genome is loaded in the ram only once when aligning on all the samples in the same process, so not passing the channel directly
-        align(fastq_reverse_ch.first(), params.library, params.mismatches, params.bases_aligned, params.threads, workflow.launchDir, params.info_alignment, create_genome.out, trimmed_fastq_ch.collect(), params.library_mode)
-        bam_files_ch = align.out.bam_files_ch.flatten().view()
+        align(fastq_reverse_ch.toSortedList().map { list -> list[0] }, params.library, params.mismatches, params.bases_aligned, params.threads, params.info_alignment, create_genome.out, trimmed_fastq_list, params.library_mode)
+        bam_files_ch = align.out.bam_files_ch.flatten()
         all_files_ch = all_files_ch.mix(bam_files_ch.map { f -> [ 'align', f, f ] })
     } else{
         bam_files_ch = channel
             .fromPath(params.bamsheet, checkIfExists: true)
             .splitCsv(header: true)
             .map { row -> file(row.bam, checkIfExists: true)}
-            .view()
     }
 
     // genearte read statistics
@@ -123,9 +126,9 @@ workflow {
         if (params.analysis_mode=='tca'){
             count_file = align.out.count_file
         } else{
-            count_umi(bam_files_ch, workflow.launchDir)
+            count_umi(bam_files_ch)
             umi_library_file = params.umi_library=='' ? file("$projectDir/assets/NO_FILE") : file(params.umi_library, checkIfExists: true)
-            combine_counts(count_umi.out.collect(), params.library, umi_library_file, workflow.launchDir)
+            combine_counts(count_umi.out.toSortedList(), params.library, umi_library_file)
             count_file_ura = combine_counts.out.ura_counts
             count_file = combine_counts.out.tca_counts
             count_file_lda = combine_counts.out.lda_counts
@@ -142,7 +145,7 @@ workflow {
         test_lda(params.experiment_design, params.fdr_threshold, params.rra_controls, workflow.launchDir, count_file_lda)
         test_outputs_umi = test_lda.out
     } else if (params.analysis_mode=='ura'){
-        test_mageck_ibar(params.experiment_design, params.fdr_threshold, workflow.launchDir, count_file_ura)
+        test_mageck_ibar(params.experiment_design, params.fdr_threshold, count_file_ura)
         test_outputs_umi = test_mageck_ibar.out
     }
 
